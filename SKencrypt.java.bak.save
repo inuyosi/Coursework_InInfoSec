@@ -1,0 +1,116 @@
+import java.io.*;
+import java.security.*;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+
+public class SKencrypt{
+	//SecretEncrypt 文書名 共通鍵ファイル名 暗号文ファイル名 モード パラメータファイル名
+	//update, doFinalの使用
+
+	public static void main(String args[]){
+		FileInputStream dataFile = null;
+		ObjectInputStream skeyFile = null;
+		FileOutputStream encryptedFile = null;
+		FileOutputStream parameterFile = null;
+		byte[] data = new byte[4096];
+		SecretKey skey = null;
+		String mode = "ECB/PKCS5Padding";
+		String algorithm = "";
+
+		if (args.length == 5){
+			mode = args[3]+"/PKCS5Padding";
+		}
+
+		//文書ファイルの表示
+		try{
+			File file = new File(args[0]);
+			FileReader filereader = new FileReader(file);
+
+			int ch;
+			while((ch = filereader.read()) != -1){
+				System.out.print((char)ch);
+			}
+
+			filereader.close();
+		}catch(FileNotFoundException e){
+			System.out.println(e);
+			System.exit(1);
+		}catch(IOException e){
+			System.out.println(e);
+			System.exit(1);
+		}
+
+		//共通鍵ファイルの読み出し
+		try{
+			ObjectInputStream objectIn = new ObjectInputStream(new FileInputStream(args[1]));
+			skey = (SecretKey)objectIn.readObject();
+			algorithm = skey.getAlgorithm();
+			objectIn.close();
+
+		}catch(FileNotFoundException e){
+			System.out.println(e);
+			System.exit(1);
+		}catch(IOException e){
+			System.out.println("鍵読み出し失敗");
+			System.exit(1);
+		}catch(ClassNotFoundException e){
+			System.out.println("オブジェクトがありません");
+			System.exit(1);
+		}
+
+		try{
+
+			//Cipherオブジェクトの生成
+			Cipher cipher = Cipher.getInstance(algorithm+"/"+mode);
+			System.out.println("transformation "+algorithm+"/"+mode);
+
+			//debug
+			//init: 鍵skeyを使用してcipherオブジェクトを初期化
+			cipher.init(Cipher.ENCRYPT_MODE, skey);
+			//平文を読み、順次暗号化
+			dataFile = new FileInputStream(args[0]);
+			encryptedFile = new FileOutputStream(args[2]);
+			int len;
+			byte[] buf = new byte[8];
+
+
+
+
+exit
+
+
+
+
+			byte[] encrypted;
+			while((len = dataFile.read(buf)) != -1){
+				encrypted = cipher.update(buf,0,len);
+				encryptedFile.write(encrypted);
+			}
+			//データ受け取り
+			encrypted = cipher.doFinal();
+			if(encrypted != null){
+				encryptedFile.write(encrypted);
+			}
+
+			encryptedFile.close();
+			dataFile.close();
+			
+			//暗号化時のパラメータ出力
+			if(args.length == 5){
+				byte[] iv = cipher.getIV();
+				//AlgorithmParameters algParams = cipher.getParameters();
+				//byte[] encodedAlgParams = algParams.getEncoded();
+				parameterFile = new FileOutputStream(args[4]);
+				parameterFile.write(iv);
+				parameterFile.close();
+			}
+		}catch(Exception e){
+			System.out.println(e);
+			System.exit(1);
+		}
+
+
+
+	}
+}

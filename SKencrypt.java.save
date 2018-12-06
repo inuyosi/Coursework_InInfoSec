@@ -15,9 +15,11 @@ public class SKencrypt implements Serializable{
 	byte[] buf = new byte[8];
 	byte[] gbuf;
 	int len;
+	byte[] iv = ci
 	keyFile.close();
 	Cipher cipher = Cipher.getInstance(algorithm+"/"+args[3]+"/PKCS5Padding");
-	cipher.init(Cipher.ENCRYPT_MODE,skey);
+        System.out.println(algorithm+"/"+args[3]+"/PKCS5Padding");
+	cipher.init(Cipher.ENCRYPT_MODE,skey,iv);
         FileOutputStream encrypted = new FileOutputStream(args[2]);
         FileOutputStream ivFile = new FileOutputStream(args[4]);
 	while(( len = inFile.read(buf)) != -1){
@@ -28,13 +30,29 @@ public class SKencrypt implements Serializable{
 	if(gbuf != null){
 		encrypted.write(gbuf);
 	}
-	byte[] iv = cipher.getIV();
-	ivFile.write(iv);
-	ivFile.close();
+	
 	inFile.close();
 	encrypted.close();
 	}
-	catch (Exception e){
+	catch (ClassNotFoundException e){
+		System.err.println(e.getMessage());
+		}
+	catch (NoSuchAlgorithmException e){
+		System.err.println(e.getMessage());
+		}
+	catch (IOException e){
+		System.err.println(e.getMessage());
+		}
+	catch (NoSuchPaddingException e){
+		System.err.println(e.getMessage());
+		}
+	catch (InvalidKeyException e){
+		System.err.println(e.getMessage());
+		}
+	catch (IllegalBlockSizeException e){
+		System.err.println(e.getMessage());
+		}
+	catch (BadPaddingException e) {
 		System.err.println(e.getMessage());
 		}
  }
